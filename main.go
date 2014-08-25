@@ -22,6 +22,7 @@ type config struct {
 	decHighLvl int
 	decMaxLvl  int
 
+	maxLvl       int
 	baseLvl      int
 	pollInterval int
 }
@@ -29,6 +30,7 @@ type config struct {
 func createConfig() *config {
 	cfg := new(config)
 
+	// defaults
 	cfg.incLowLvl = 2
 	cfg.incHighLvl = 4
 	cfg.incMaxLvl = 6
@@ -45,6 +47,7 @@ func createConfig() *config {
 	cfg.decHighTemp = 60
 	cfg.decMaxTemp = 77
 
+	cfg.maxLvl = 6
 	cfg.baseLvl = 1
 	cfg.pollInterval = 10
 
