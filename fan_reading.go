@@ -15,9 +15,14 @@ func moduleExists() bool {
 	return true
 }
 
-// func readFanLevel
+func readFanLevel(cfg *config, temp_diff int) {
+}
 
 func fanControl(cfg *config) {
-	cfg.baseLvl = 1
+	file, err := os.Open(FAN_PATH)
+	if err != nil {
+		fmt.Println("Error: could not open the fan path.")
+		os.Exit(1)
+	}
 	fmt.Println(*cfg)
 }

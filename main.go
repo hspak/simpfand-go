@@ -6,26 +6,49 @@ import (
 )
 
 type config struct {
-	incLowTemp  uint16
-	incHighTemp uint16
-	incMaxTemp  uint16
+	incLowTemp  int
+	incHighTemp int
+	incMaxTemp  int
 
-	incLowLvl    uint16
-	incHighLvl   uint16
-	incMaxLowLvl uint16
+	incLowLvl  int
+	incHighLvl int
+	incMaxLvl  int
 
-	decLowTemp  uint16
-	decHighTemp uint16
-	decMaxTemp  uint16
+	decLowTemp  int
+	decHighTemp int
+	decMaxTemp  int
 
-	decLowLvl    uint16
-	decHighLvl   uint16
-	decMaxLowLvl uint16
+	decLowLvl  int
+	decHighLvl int
+	decMaxLvl  int
 
-	baseLvl uint16
+	baseLvl      int
+	pollInterval int
+}
 
-	pollInterval uint16
-	maxTemp      uint16
+func createConfig() *config {
+	cfg := new(config)
+
+	cfg.incLowLvl = 2
+	cfg.incHighLvl = 4
+	cfg.incMaxLvl = 6
+
+	cfg.incLowTemp = 55
+	cfg.incHighTemp = 65
+	cfg.incMaxTemp = 82
+
+	cfg.decLowLvl = 4
+	cfg.decHighLvl = 5
+	cfg.decMaxLvl = 6
+
+	cfg.decLowTemp = 50
+	cfg.decHighTemp = 60
+	cfg.decMaxTemp = 77
+
+	cfg.baseLvl = 1
+	cfg.pollInterval = 10
+
+	return cfg
 }
 
 func main() {
@@ -37,10 +60,11 @@ func main() {
 
 	if *flagStart == true {
 		if moduleExists() {
+			cfg := createConfig()
+			configParse(cfg)
+			fanControl(cfg)
 			fmt.Println("good")
 		} else {
-			cfg := new(config)
-			fanControl(cfg)
 			fmt.Println("bad")
 		}
 	} else if *flagStop {
