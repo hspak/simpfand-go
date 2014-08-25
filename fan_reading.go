@@ -34,22 +34,7 @@ func getTemp() int {
 	return temp / 1000
 }
 
-func getFanLevel() string {
-	file, err := os.Open(FAN_PATH)
-	if err != nil {
-		fmt.Println("Error: could not open the fan path.")
-		os.Exit(1)
-	}
-	defer file.Close()
-
-	scanner := bufio.NewReader(file)
-	lvl, _ := scanner.ReadBytes('\n')
-	return string(lvl)
-}
-
-func setFanLevel(cfg *config, curr_temp int, prev_temp int) {
-
-	currLvl := getFanLevel()
+func getFanLevel(cfg *config, curr_temp int, prev_temp int) int {
 	newLvl := cfg.baseLvl
 	temp_diff := curr_temp - prev_temp
 
@@ -74,27 +59,31 @@ func setFanLevel(cfg *config, curr_temp int, prev_temp int) {
 			newLvl = cfg.baseLvl
 		}
 	}
+	return newLvl
+}
 
-	newLvlStr := string(newLvl)
-	if temp_diff != 0 && newLvlStr != currLvl {
-		file, err := os.Open(FAN_PATH)
-		if err != nil {
-			fmt.Println("Error: could not open the fan path.")
-			os.Exit(1)
-		}
-		defer file.Close()
-		file.Write([]byte(newLvlStr))
+func setFanLevel(lvl int) {
+	lvlStr := "level " + string(lvl)
+	file, err := os.Open(FAN_PATH)
+	if err != nil {
+		fmt.Println("Error: could not open the fan path.")
+		os.Exit(1)
 	}
+	defer file.Close()
+	file.Write([]byte(lvlStr))
 }
 
 func fanControl(cfg *config) {
 	curr_temp := getTemp()
 	prev_temp := curr_temp
 
-	// curr_lvl :=
+	old_lvl := 0
+	new_lvl := getFanLevel(cfg, curr_temp, prev_temp)
 	for {
 		fmt.Println("curr_temp", curr_temp)
-		setFanLevel(cfg, curr_temp, prev_temp)
+		if old_lvl != new_lvl {
+			setFanLevel(new_lvl)
+		}
 
 		time.Sleep(time.Second * time.Duration(cfg.pollInterval))
 		prev_temp = curr_temp
