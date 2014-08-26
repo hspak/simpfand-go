@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+var VERSION string
+
 type config struct {
 	incLowTemp  int
 	incHighTemp int
@@ -54,6 +56,21 @@ func createConfig() *config {
 	return cfg
 }
 
+func showHelp() {
+	fmt.Printf("Usage: simpfand-go <action>\n\n" +
+
+		"  Actions:\n" +
+		"    --start       start simpfand-go\n" +
+		"    --version     display version\n" +
+		"    --help        display help\n\n" +
+
+		" NOTE: running --start manually is not recommended!\n")
+}
+
+func showVersion() {
+	fmt.Println("simpfand-go version:", VERSION)
+}
+
 func main() {
 	flagStart := flag.Bool("start", false, "start simpfand")
 	flagStop := flag.Bool("stop", false, "stop simpfand")
@@ -73,8 +90,8 @@ func main() {
 	} else if *flagStop {
 		fmt.Println("stop")
 	} else if *flagVersion {
-		fmt.Println("version")
+		showVersion()
 	} else if *flagHelp || true {
-		fmt.Println("help")
+		showHelp()
 	}
 }

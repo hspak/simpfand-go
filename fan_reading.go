@@ -34,32 +34,32 @@ func getTemp() int {
 	return temp / 1000
 }
 
-func getFanLevel(cfg *config, curr_temp int, prev_temp int) int {
-	newLvl := cfg.baseLvl
-	temp_diff := curr_temp - prev_temp
+func getFanLevel(cfg *config, currTemp int, prevTemp int) int {
+	currLvl := cfg.baseLvl
+	temp_diff := currTemp - prevTemp
 
 	if temp_diff > 0 {
-		if curr_temp <= cfg.incLowTemp {
-			newLvl = cfg.incLowLvl
-		} else if curr_temp <= cfg.incHighTemp {
-			newLvl = cfg.incHighLvl
-		} else if curr_temp <= cfg.incMaxTemp {
-			newLvl = cfg.incMaxLvl
+		if currTemp <= cfg.incLowTemp {
+			currLvl = cfg.incLowLvl
+		} else if currTemp <= cfg.incHighTemp {
+			currLvl = cfg.incHighLvl
+		} else if currTemp <= cfg.incMaxTemp {
+			currLvl = cfg.incMaxLvl
 		} else {
-			newLvl = cfg.maxLvl
+			currLvl = cfg.maxLvl
 		}
 	} else if temp_diff < 0 {
-		if curr_temp > cfg.decMaxTemp {
-			newLvl = cfg.decMaxLvl
-		} else if curr_temp > cfg.decHighTemp {
-			newLvl = cfg.decHighLvl
-		} else if curr_temp > cfg.decLowTemp {
-			newLvl = cfg.decLowLvl
+		if currTemp > cfg.decMaxTemp {
+			currLvl = cfg.decMaxLvl
+		} else if currTemp > cfg.decHighTemp {
+			currLvl = cfg.decHighLvl
+		} else if currTemp > cfg.decLowTemp {
+			currLvl = cfg.decLowLvl
 		} else {
-			newLvl = cfg.baseLvl
+			currLvl = cfg.baseLvl
 		}
 	}
-	return newLvl
+	return currLvl
 }
 
 func setFanLevel(lvl int) {
@@ -70,23 +70,27 @@ func setFanLevel(lvl int) {
 		os.Exit(1)
 	}
 	defer file.Close()
-	file.Write([]byte(lvlStr))
+
+	write, err := file.Write([]byte(lvlStr))
+	if err != nil {
+		fmt.Println("Error: could not set fan level", write)
+	}
 }
 
 func fanControl(cfg *config) {
-	curr_temp := getTemp()
-	prev_temp := curr_temp
-
-	old_lvl := 0
-	new_lvl := getFanLevel(cfg, curr_temp, prev_temp)
+	currTemp := getTemp()
+	prevTemp := currTemp
+	prevLvl := 0
+	currLvl := getFanLevel(cfg, currTemp, prevTemp)
 	for {
-		fmt.Println("curr_temp", curr_temp)
-		if old_lvl != new_lvl {
-			setFanLevel(new_lvl)
+		if prevLvl != currLvl {
+			setFanLevel(currLvl)
 		}
 
 		time.Sleep(time.Second * time.Duration(cfg.pollInterval))
-		prev_temp = curr_temp
-		curr_temp = getTemp()
+		prevTemp = currTemp
+		currTemp = getTemp()
+		prevLvl = currLvl
+		currLvl = getFanLevel(cfg, currTemp, prevTemp)
 	}
 }
