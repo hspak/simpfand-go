@@ -18,7 +18,7 @@ func moduleExists() bool {
 	return true
 }
 
-func getTemp() int {
+func getTemp() uint16 {
 	file, err := os.Open(TEMP_PATH)
 	if err != nil {
 		fmt.Println("Error: could not read temperatures.")
@@ -31,10 +31,10 @@ func getTemp() int {
 		read = scanner.Text()
 	}
 	temp, _ := strconv.Atoi(read)
-	return temp / 1000
+	return uint16(temp / 1000)
 }
 
-func getFanLevel(cfg *config, currTemp int, prevTemp int) int {
+func getFanLevel(cfg *config, currTemp uint16, prevTemp uint16) uint16 {
 	currLvl := cfg.baseLvl
 	temp_diff := currTemp - prevTemp
 
@@ -62,25 +62,25 @@ func getFanLevel(cfg *config, currTemp int, prevTemp int) int {
 	return currLvl
 }
 
-func setFanLevel(lvl int) {
-	lvlStr := "level " + string(lvl)
-	file, err := os.Open(FAN_PATH)
+func setFanLevel(lvl uint16) {
+	lvlStr := "level " + strconv.Itoa(int(lvl))
+	file, err := os.OpenFile(FAN_PATH, os.O_WRONLY, 0600)
 	if err != nil {
-		fmt.Println("Error: could not open the fan path.")
+		fmt.Println("Error: could not open the fan path.", err)
 		os.Exit(1)
 	}
 	defer file.Close()
 
-	write, err := file.Write([]byte(lvlStr))
+	_, err = file.Write([]byte(lvlStr))
 	if err != nil {
-		fmt.Println("Error: could not set fan level", write)
+		fmt.Println("Error: could not set fan level", err)
 	}
 }
 
 func fanControl(cfg *config) {
 	currTemp := getTemp()
 	prevTemp := currTemp
-	prevLvl := 0
+	prevLvl := uint16(0)
 	currLvl := getFanLevel(cfg, currTemp, prevTemp)
 	for {
 		if prevLvl != currLvl {

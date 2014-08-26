@@ -8,25 +8,25 @@ import (
 var VERSION string
 
 type config struct {
-	incLowTemp  int
-	incHighTemp int
-	incMaxTemp  int
+	incLowTemp  uint16
+	incHighTemp uint16
+	incMaxTemp  uint16
 
-	incLowLvl  int
-	incHighLvl int
-	incMaxLvl  int
+	incLowLvl  uint16
+	incHighLvl uint16
+	incMaxLvl  uint16
 
-	decLowTemp  int
-	decHighTemp int
-	decMaxTemp  int
+	decLowTemp  uint16
+	decHighTemp uint16
+	decMaxTemp  uint16
 
-	decLowLvl  int
-	decHighLvl int
-	decMaxLvl  int
+	decLowLvl  uint16
+	decHighLvl uint16
+	decMaxLvl  uint16
 
-	maxLvl       int
-	baseLvl      int
-	pollInterval int
+	maxLvl       uint16
+	baseLvl      uint16
+	pollInterval uint16
 }
 
 func createConfig() *config {

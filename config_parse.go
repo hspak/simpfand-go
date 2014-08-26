@@ -16,7 +16,7 @@ func configFileExists() (bool, error) {
 	return false, err
 }
 
-func configUpdate(cfg *config, key string, val int) {
+func configUpdate(cfg *config, key string, val uint16) {
 	switch key {
 	case "POLLING":
 		cfg.pollInterval = val
@@ -66,7 +66,7 @@ func configParse(cfg *config) (bool, error) {
 			trimmedKey := strings.TrimSpace(pair[KEY])
 			trimmedVal := strings.TrimSpace(pair[VAL])
 			val, _ := strconv.Atoi(trimmedVal)
-			configUpdate(cfg, trimmedKey, val)
+			configUpdate(cfg, trimmedKey, uint16(val))
 		}
 	}
 
