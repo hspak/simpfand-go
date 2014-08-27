@@ -77,14 +77,13 @@ func setFanLevel(lvl uint16) {
 	lvlStr := "level " + strconv.Itoa(int(lvl))
 	file, err := os.OpenFile(FAN_PATH, os.O_WRONLY, 0600)
 	if err != nil {
-		fmt.Println("Error: could not open the fan path.", err)
-		os.Exit(1)
+		log.Fatal("Error: could not open the fan path.")
 	}
 	defer file.Close()
 
 	_, err = file.Write([]byte(lvlStr))
 	if err != nil {
-		fmt.Println("Error: could not set fan level", err)
+		log.Fatal("Error: could not write to fan level.")
 	}
 }
 
