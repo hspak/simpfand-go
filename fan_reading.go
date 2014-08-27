@@ -3,6 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
+	"log/syslog"
 	"os"
 	"strconv"
 	"time"
@@ -19,10 +21,19 @@ func moduleExists() bool {
 }
 
 func getTemp() uint16 {
-	file, err := os.Open(TEMP_PATH)
-	if err != nil {
-		fmt.Println("Error: could not read temperatures.")
-		os.Exit(1)
+	var file *os.File
+	validPath := false
+	for _, path := range tempPaths {
+		var err error
+		file, err = os.Open(path)
+		if err != nil {
+			continue
+		}
+		validPath = true
+	}
+
+	if !validPath {
+		log.Fatal("Error: could not find temperature readings")
 	}
 
 	var read string
@@ -40,13 +51,13 @@ func getFanLevel(cfg *config, currTemp uint16, prevTemp uint16) uint16 {
 
 	if temp_diff > 0 {
 		if currTemp <= cfg.incLowTemp {
-			currLvl = cfg.incLowLvl
+			currLvl = cfg.baseLvl
 		} else if currTemp <= cfg.incHighTemp {
-			currLvl = cfg.incHighLvl
+			currLvl = cfg.incLowLvl
 		} else if currTemp <= cfg.incMaxTemp {
-			currLvl = cfg.incMaxLvl
+			currLvl = cfg.incHighLvl
 		} else {
-			currLvl = cfg.maxLvl
+			currLvl = cfg.incMaxLvl
 		}
 	} else if temp_diff < 0 {
 		if currTemp > cfg.decMaxTemp {
@@ -77,7 +88,7 @@ func setFanLevel(lvl uint16) {
 	}
 }
 
-func fanControl(cfg *config) {
+func fanControl(cfg *config, mainLogger *syslog.Writer) {
 	currTemp := getTemp()
 	prevTemp := currTemp
 	prevLvl := uint16(0)
@@ -85,6 +96,10 @@ func fanControl(cfg *config) {
 	for {
 		if prevLvl != currLvl {
 			setFanLevel(currLvl)
+			mainLogger.Debug(fmt.Sprintf("Fan level changed: %d -> %d (%d -> %d)",
+				prevLvl, currLvl, prevTemp, currTemp))
+		} else {
+			mainLogger.Debug(fmt.Sprintf("Fan level remained: %d (%d -> %d)", currLvl, prevTemp, currTemp))
 		}
 
 		time.Sleep(time.Second * time.Duration(cfg.pollInterval))

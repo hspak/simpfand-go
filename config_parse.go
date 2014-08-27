@@ -3,6 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
+	"log/syslog"
 	"os"
 	"strconv"
 	"strings"
@@ -49,30 +51,37 @@ func configUpdate(cfg *config, key string, val uint16) {
 	}
 }
 
-func configParse(cfg *config) (bool, error) {
+func configParse(cfg *config, mainLogger *syslog.Writer) bool {
 	const KEY = 0
 	const VAL = 1
 	file, err := os.Open(CONFIG_PATH)
 	if err != nil {
-		return false, err
+		return false
 	}
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
+	newConf := false
 	for scanner.Scan() {
 		read := scanner.Text()
 		if len(read) > 0 && read[0] != '#' {
+			newConf = true
 			pair := strings.Split(read, "=")
 			trimmedKey := strings.TrimSpace(pair[KEY])
 			trimmedVal := strings.TrimSpace(pair[VAL])
 			val, _ := strconv.Atoi(trimmedVal)
 			configUpdate(cfg, trimmedKey, uint16(val))
+			mainLogger.Info(fmt.Sprintf("Custom setting found %s: %s", trimmedKey, trimmedVal))
 		}
 	}
 
-	if err := scanner.Err(); err != nil {
-		fmt.Println("error")
+	if !newConf {
+		mainLogger.Info("No custom settings found, using defaults")
 	}
 
-	return true, err
+	if err := scanner.Err(); err != nil {
+		log.Fatal("Error: could not parse config file")
+	}
+
+	return true
 }

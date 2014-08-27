@@ -3,9 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"log/syslog"
+	"os"
 )
 
 var VERSION string
+var tempPaths [TEMP_PATH_CNT]string
 
 type config struct {
 	incLowTemp  uint16
@@ -49,7 +53,6 @@ func createConfig() *config {
 	cfg.decHighTemp = 60
 	cfg.decMaxTemp = 77
 
-	cfg.maxLvl = 6
 	cfg.baseLvl = 1
 	cfg.pollInterval = 10
 
@@ -64,7 +67,7 @@ func showHelp() {
 		"    --version     display version\n" +
 		"    --help        display help\n\n" +
 
-		" NOTE: running --start manually is not recommended!\n")
+		"NOTE: running --start manually is not recommended!\n")
 }
 
 func showVersion() {
@@ -72,8 +75,13 @@ func showVersion() {
 }
 
 func main() {
+	// will take the executable name with empty tag
+	mainLogger, err := syslog.New(syslog.LOG_ERR, "")
+	if err != nil {
+		log.Fatal("Error: could not start syslog")
+	}
+
 	flagStart := flag.Bool("start", false, "start simpfand")
-	flagStop := flag.Bool("stop", false, "stop simpfand")
 	flagVersion := flag.Bool("version", false, "version")
 	flagHelp := flag.Bool("help", false, "help")
 	flag.Parse()
@@ -81,17 +89,21 @@ func main() {
 	if *flagStart == true {
 		if moduleExists() {
 			cfg := createConfig()
-			configParse(cfg)
-			fanControl(cfg)
-			fmt.Println("good")
+			if !configParse(cfg, mainLogger) {
+				mainLogger.Err("Error: could not open config file, using defaults")
+			}
+			fanControl(cfg, mainLogger)
 		} else {
-			fmt.Println("bad")
+			os.Exit(1)
 		}
-	} else if *flagStop {
-		fmt.Println("stop")
 	} else if *flagVersion {
 		showVersion()
 	} else if *flagHelp || true {
 		showHelp()
 	}
+}
+
+func init() {
+	tempPaths[0] = TEMP_PATH_1
+	tempPaths[1] = TEMP_PATH_2
 }
