@@ -1,15 +1,15 @@
 # Simpfand-go
-## go port of [simpfand](https://github.com/hspak/simpfand)
+### go port of [simpfand](https://github.com/hspak/simpfand)
 
-### Why
+## Why
 
 Because go.
 
-### Is it better?
+## Is it better?
 
 No. It's probably worse in every way. It's bigger and will likely use more
 resources.
 
-### License
+## License
 
 MIT
