@@ -45,8 +45,8 @@ func getTemp() uint16 {
 	return uint16(temp / 1000)
 }
 
-func getFanLevel(cfg *config, currTemp uint16, prevTemp uint16) uint16 {
-	currLvl := cfg.baseLvl
+func getFanLevel(cfg *config, currTemp uint16, prevTemp uint16, prevLvl uint16) uint16 {
+	currLvl := prevLvl
 	temp_diff := currTemp - prevTemp
 
 	if temp_diff > 0 {
@@ -91,7 +91,7 @@ func fanControl(cfg *config, mainLogger *syslog.Writer) {
 	currTemp := getTemp()
 	prevTemp := currTemp
 	prevLvl := uint16(0)
-	currLvl := getFanLevel(cfg, currTemp, prevTemp)
+	currLvl := getFanLevel(cfg, currTemp, prevTemp, prevLvl)
 	for {
 		if prevLvl != currLvl {
 			setFanLevel(currLvl)
@@ -105,6 +105,6 @@ func fanControl(cfg *config, mainLogger *syslog.Writer) {
 		prevTemp = currTemp
 		currTemp = getTemp()
 		prevLvl = currLvl
-		currLvl = getFanLevel(cfg, currTemp, prevTemp)
+		currLvl = getFanLevel(cfg, currTemp, prevTemp, prevLvl)
 	}
 }
