@@ -59,7 +59,7 @@ func getFanLevel(cfg *config, currTemp uint16, prevTemp uint16, prevLvl uint16) 
 		} else {
 			currLvl = cfg.incMaxLvl
 		}
-	} else if temp_diff < 0 {
+	} else if temp_diff <= 0 {
 		if currTemp > cfg.decMaxTemp {
 			currLvl = cfg.decMaxLvl
 		} else if currTemp > cfg.decHighTemp {
@@ -90,7 +90,7 @@ func setFanLevel(lvl uint16) {
 func fanControl(cfg *config, mainLogger *syslog.Writer) {
 	currTemp := getTemp()
 	prevTemp := currTemp
-	prevLvl := uint16(0)
+	prevLvl := uint16(1)
 	currLvl := getFanLevel(cfg, currTemp, prevTemp, prevLvl)
 	for {
 		if prevLvl != currLvl {
